@@ -1,0 +1,42 @@
+.content {
+    width: 90%;
+    padding: 3em;
+    display: flex;
+    flex-direction: column;
+  }
+  .content h1 {
+    font-weight: 700 bold;
+    margin-bottom: 1em;
+  }
+  .content input {
+    width: 447px;
+    height: 3em;
+    margin-right: 2em;
+    margin-bottom: 2em;
+    padding-left: 1em;
+    border: none;
+    background-color: rgb(247, 242, 202);
+  }
+  .content textarea {
+    width: 69.4vw;
+    height: 30vh;
+    border: none;
+    background-color: rgb(247, 242, 202);
+    padding-left: 1em;
+  }
+  .content button {
+   width: 10em;
+   height: 3em;
+   margin-top: 1em;
+   margin-left: 380px;
+   background-color: #222;
+   color: #fff;
+   border-radius: 5px;
+   border: none;
+  }
+  .content button:hover {
+    color: #ffbb33;
+  }
+  .content input::placeholder {
+    color: #7b7b7b;
+  }

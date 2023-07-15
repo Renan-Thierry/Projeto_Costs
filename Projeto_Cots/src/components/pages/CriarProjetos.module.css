@@ -1,0 +1,12 @@
+.content_section {
+  width: 450px;
+  margin: 0 auto;
+  padding: 3em;
+}
+.content_section h1 {
+  font-weight: 700 bold;
+  margin-bottom: 0.5em;
+}
+.content_section p {
+  color: #7b7b7b;
+}
