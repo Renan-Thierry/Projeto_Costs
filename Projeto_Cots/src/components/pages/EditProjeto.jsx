@@ -4,11 +4,15 @@ import { useState, useEffect } from 'react';
 import Loading from '../layout/Loading'
 import Container from '../layout/Container'
 import FormProjetos from '../project/FormProjetos'
-import Message from '../layout/Message'
+import Message from '../layout/Message';
+import ServiceForm from '../service/ServiceForm';
+import { v4 as uuidv4 } from 'uuid';
+import ServiceCard from '../service/ServiceCard';
 
 function EditProjeto(){
     const { id } = useParams()  //pra ele saber que eu quero o id q ta vindo pela url
     const [projeto, setProjeto] = useState([])
+    const [services, setServices] = useState([])
     const [showServiceForm, setShowServiceForm] = useState(false)
     const [showProjeto, setShowProjeto] = useState(false) // inicia com um valor false para nao mostrar a pagina de ediçao do projeto
     const [mensagem, setMensagem] = useState()
@@ -25,6 +29,7 @@ function EditProjeto(){
             }).then((resp) => resp.json())  //pega a resposta do projeto e transforma em json
             .then((data) => {
                 setProjeto(data);
+                setServices(data.services)
             })
             .catch((erro) => console.log(erro))
         }, 2000)    
@@ -50,6 +55,63 @@ function EditProjeto(){
             setShowProjeto(false)
             setMensagem('Projeto atualizado')
             setType('sucesso')
+        })
+        .catch((err) => console.log(err))
+    }
+
+    function removeService(id, costs){
+        const servicesUpdate = projeto.services.filter(
+            (service) => service.id !== id
+        )
+        const projetoUpdated = projeto
+        projetoUpdated.services = servicesUpdate
+        projetoUpdated.costs = parseFloat(projetoUpdated.costs) - parseFloat(costs) //reduzindo o valor total com o serviço
+        
+        fetch(`http://localhost:3000/projetos/${projetoUpdated.id}`, {
+            method:'PATCH',
+            headers: {
+                'content-type': 'application/json'
+            },
+            body: JSON.stringify(projeto)
+        }).then((resp) => {
+            resp.json()
+        })
+        .then((data) => {
+            setProjeto(projetoUpdated)
+            setServices(servicesUpdate)
+            setMensagem('Serviço removido com Sucesso')
+        })
+        .catch((err) => console.log(err))
+    }
+
+    function createService(projeto){
+        setMensagem('')
+        const ultimoService = projeto.services[projeto.services.length -1]
+        ultimoService.id = uuidv4()
+        const ultimoServiceCost = ultimoService.cost
+        const newCost = parseFloat(projeto.cost) + parseFloat(ultimoServiceCost)
+
+        if(newCost > parseFloat(projeto.budget)){
+            setMensagem('Orçamento ultrapassado, verifique o valor do serviço')
+            setType('erro')
+            projeto.services.pop()
+            return false
+        }
+        //atuliza o costs do projeto
+        projeto.cost = newCost
+
+        //atualiza o projeto
+        fetch(`http://localhost:3000/projetos/${projeto.id}`, {
+            method:'PATCH',
+            headers: {
+                'content-type': 'application/json'
+            },
+            body: JSON.stringify(projeto)
+        }).then((resp) => {
+            resp.json()
+        })
+        .then((data) => {
+            console.log(data);
         })
         .catch((err) => console.log(err))
     }
@@ -106,13 +168,28 @@ function EditProjeto(){
                             </button>
                             <div className={styles.projeto_info}>
                                 {showServiceForm &&(
-                                    <div>Formulario de Serviço</div>
+                                    <ServiceForm handleSubmit={createService}
+                                    textBtn="Adicionar Serviço"
+                                    projectData={projeto}/>
                                 )}
                             </div>
                     </div>    
                     <h2>Serviços:</h2>
                             <Container customClass="start">
-                                    <p>itens de Serviços</p>
+                                    {services.length > 0 &&
+                                        services.map((service) => (
+                                        <ServiceCard 
+                                        id={service.id}
+                                        name={service.name}
+                                        costs={service.cost}
+                                        description={service.description}
+                                        key={service.id}
+                                        handleRemoveService={removeService}
+                                        />
+                                    ))}
+                                    {services.length === 0 &&(
+                                        <p>Não há serviços cadastrados</p>
+                                    )}
                             </Container>
                     </Container>
                 </div>
